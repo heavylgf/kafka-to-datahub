@@ -1,0 +1,13 @@
+<component name="libraryTable">
+  <library name="Maven: com.aliyun.datahub:aliyun-sdk-datahub:2.16.1-public">
+    <CLASSES>
+      <root url="jar://$MAVEN_REPOSITORY$/com/aliyun/datahub/aliyun-sdk-datahub/2.16.1-public/aliyun-sdk-datahub-2.16.1-public.jar!/" />
+    </CLASSES>
+    <JAVADOC>
+      <root url="jar://$MAVEN_REPOSITORY$/com/aliyun/datahub/aliyun-sdk-datahub/2.16.1-public/aliyun-sdk-datahub-2.16.1-public-javadoc.jar!/" />
+    </JAVADOC>
+    <SOURCES>
+      <root url="jar://$MAVEN_REPOSITORY$/com/aliyun/datahub/aliyun-sdk-datahub/2.16.1-public/aliyun-sdk-datahub-2.16.1-public-sources.jar!/" />
+    </SOURCES>
+  </library>
+</component>
