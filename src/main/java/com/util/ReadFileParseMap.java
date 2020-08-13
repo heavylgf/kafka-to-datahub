@@ -26,9 +26,9 @@ public class ReadFileParseMap {
      * @throws Exception
      */
     public List<FilePropertiesMapModel> readfile() throws Exception {
-        Logger.info("开始加载topics.properties文件内容.......");
+        Logger.info("开始加载topicsmapcolumn.properties文件内容.......");
         InputStreamReader reader = new InputStreamReader(
-                new FileInputStream("/development/eclipse/eclipse-workspace/kafka-to-datahub/src/main/resources/topicsMap.properties"),
+                new FileInputStream("/development/eclipse/eclipse-workspace/kafka-to-datahub/src/main/resources/topicsmapcolumn.properties"),
                 "UTF-8");
 
         // 构造一个BufferedReader类来读取文件
@@ -43,24 +43,27 @@ public class ReadFileParseMap {
         }
 
         bufferedReader.close();
-        Logger.info("加载topics.properties文件内容结束.......");
+        Logger.info("加载topicsmapcolumn.properties文件内容结束.......");
 
         return listTopicPropertis;
     }
 
+
     public static void main(String[] args) throws Exception {
         System.out.println("程序开始执行：.......");
-//        ReadFileParseMap readFileParse = new ReadFileParseMap();
-//        readFileParse.readfile();
-        ReadFileParseMap readFileParse = new ReadFileParseMap();
-        List<FilePropertiesMapModel> filePropertiesMapModelList = readFileParse.readfile();
+        ReadFileParseMap readFileParseMap = new ReadFileParseMap();
+        List<FilePropertiesMapModel> filePropertiesMapModelList = readFileParseMap.readfile();
+
+        // size: 130
+        System.out.println("size: " + filePropertiesMapModelList.size());
 
         for (int i = 0; i < filePropertiesMapModelList.size(); i++) {
-            System.out.println("topicName: " + filePropertiesMapModelList.get(i).getTopicName());
+            System.out.println("kafkaTopicName: " + filePropertiesMapModelList.get(i).getKafkaTopicName());
+            System.out.println("datahubTopicName: " + filePropertiesMapModelList.get(i).getDatahubTopicName());
 
-            for (Map.Entry<String, String> column : filePropertiesMapModelList.get(i).getMappropertis().entrySet()) {
-                System.out.println("column: " + column.getKey() + ", column_type: " + column.getValue());
-            }
+//            for (Map.Entry<String, String> column : filePropertiesMapModelList.get(i).getMappropertis().entrySet()) {
+//                System.out.println("column: " + column.getKey() + ", column_type: " + column.getValue());
+//            }
         }
 
     }

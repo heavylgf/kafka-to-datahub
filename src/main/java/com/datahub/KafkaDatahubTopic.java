@@ -106,8 +106,6 @@ public class KafkaDatahubTopic {
 
                 data.setField("time1", timestamp);
 
-
-
                 recordEntry.setRecordData(data);
                 recordEntry.setShardId(shardId);
                 recordEntries.add(recordEntry);

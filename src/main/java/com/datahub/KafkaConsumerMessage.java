@@ -28,10 +28,7 @@ public class KafkaConsumerMessage {
     private static final Logger Logger = LoggerFactory.getLogger(KafkaConsumerMessage.class);
 
     private static KafkaConsumer consumer;
-
-//    private ConsumerRecords<String, String> records;
     private static Properties properties;
-//    private final String topic;
 
     static {
         // 配置属性值
@@ -60,7 +57,7 @@ public class KafkaConsumerMessage {
      */
     private void consumerMessageAutoCommit(List<FilePropertiesMapModel> filePropertiesMapModelList,
                                                          String projectName, DatahubClient datahubClient) {
-        int NUMBER = 1000;
+        int NUMBER = 10;
         // 创建消费者
         consumer = new KafkaConsumer(properties);
         DateUtils dateUtils = new DateUtils();
@@ -68,55 +65,52 @@ public class KafkaConsumerMessage {
         // 订阅消费者topic
         for (int i = 0; i < filePropertiesMapModelList.size(); i++) {
             // 获取topicName
-            String topicName = filePropertiesMapModelList.get(i).getTopicName();
-            consumer.subscribe(Arrays.asList(topicName));
+            String kafkaTopicName = filePropertiesMapModelList.get(i).getKafkaTopicName();
+            String datahubTopicName = filePropertiesMapModelList.get(i).getDatahubTopicName();
+            consumer.subscribe(Arrays.asList(kafkaTopicName));
 
 //            Logger.info("bootstrap.servers：" + properties.getProperty("bootstrap.servers") + " ，" +
 //                    "group.id：" + properties.getProperty("groupId") + "，" +
 //                    "topic：" + topicName);
 
-            // 获取schema
-            RecordSchema recordSchema = datahubClient.getTopic(projectName, topicName).getRecordSchema();
-
-            // 生成十条数据
+            // 获取datahub中的 schema
+            RecordSchema recordSchema = datahubClient.getTopic(projectName, datahubTopicName).getRecordSchema();
             List<RecordEntry> recordEntries = new ArrayList<>();
+            // 一次性获取kafka中100条数据
             ConsumerRecords<String, String> records = consumer.poll(NUMBER);
             while(true){
-
                 if (records != null && records.count() > 0) {
-                    // 遍历每条json
+                    // 遍历kafka中的每条数据
                     for(ConsumerRecord<String, String> record : records) {
                         try {
-
-//                        System.out.println(record.timestamp() + "," + record.topic() + ","
-//                                + record.partition() + "," + record.offset() + " "
-//                                + record.key() + "," + record.value());
-
                             RecordEntry recordEntry = new RecordEntry();
                             TupleRecordData data = new TupleRecordData(recordSchema);
 
-                            // 获取json中的 value
+                            // 获取值value，拿到的是一条json数据，并进行解析
                             String kafkaMessages = record.value();
-
                             JSONObject jsonObject = JSON.parseObject(kafkaMessages);
 
                             // 通过获取该topic字段类型，来赋值给data
-                            for (Map.Entry<String, String> vo : filePropertiesMapModelList.get(i).getMappropertis().entrySet()) {
+                            for (Map.Entry<String, String> column_types : filePropertiesMapModelList.get(i).getMappropertis().entrySet()) {
 
-                                // 获取topic中key对应的value不为null的字段
-                                if (jsonObject.getString(vo.getKey()) != null) {
-                                    if (vo.getValue() == "decimal") {
-//                                String key1 = vo.getKey();
-//                                String value1 = jsonObject.getString(vo.getKey());
-                                        data.setField(vo.getKey(), new BigDecimal(jsonObject.getString(vo.getKey())));
-                                    } else if (vo.getValue() == "timestamp") {
+                                // 获取字段名
+                                String column = column_types.getKey();
+                                // 获取字段类型
+                                String type = column_types.getValue();
+
+                                // 根据列名查询kafka中解析的数据是否有值
+                                if (jsonObject.getString(column) != null) {
+                                    // 判断字段类型
+                                    if (type.equals("DECIMAL")) {
+                                        // 将json解析的值写入datahub中
+                                        data.setField(column, new BigDecimal(jsonObject.getString(column)));
+                                    } else if (type.equals("TIMESTAMP") ) {
                                         // 转换成时间时间戳
-                                        data.setField(vo.getKey(), dateUtils.getTimestamp(jsonObject.getString(vo.getKey())));
+                                        data.setField(column, dateUtils.getTimestamp(jsonObject.getString(column)));
                                     } else {
-                                        data.setField(vo.getKey(), jsonObject.getString(vo.getKey()));
+                                        data.setField(column, jsonObject.getString(column));
                                     }
                                 }
-//                            System.out.println("columns_key: " + vo.getKey() + ", columns_value: " + vo.getValue());
                             }
 
                             recordEntry.setRecordData(data);
@@ -130,7 +124,7 @@ public class KafkaConsumerMessage {
 
                     try {
                         // 服务端从2.12版本开始支持，之前版本请使用putRecords接口
-                        datahubClient.putRecordsByShard(projectName, topicName, shardId, recordEntries);
+                        datahubClient.putRecordsByShard(projectName, datahubTopicName, shardId, recordEntries);
                         // datahubClient.putRecords(projectName, topicName, recordEntries);
                         System.out.println("write data successful");
                     } catch (InvalidParameterException e) {
@@ -150,11 +144,9 @@ public class KafkaConsumerMessage {
                         System.out.println(e);
                         System.exit(1);
                     }
-
                 }
             }
         }
-
     }
 
     public static void main(String[] args) {
@@ -182,10 +174,10 @@ public class KafkaConsumerMessage {
                 .build();
 
         // 读取topic 配置文件
-        ReadFileParseMap readFileParse = new ReadFileParseMap();
+        ReadFileParseMap readFileParseMap = new ReadFileParseMap();
         List<FilePropertiesMapModel> filePropertiesMapModelList = new ArrayList<>();
         try {
-            filePropertiesMapModelList = readFileParse.readfile();
+            filePropertiesMapModelList = readFileParseMap.readfile();
         } catch (Exception e) {
             System.out.println("加载topic 配置文件出错：" + e);
 

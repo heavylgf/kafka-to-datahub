@@ -49,7 +49,7 @@ public class JsonTest {
         // 遍历topic文件信息
         for (int i = 0; i < filePropertiesMapModelList.size(); i++) {
 
-            System.out.println("topicName: " + filePropertiesMapModelList.get(i).getTopicName());
+//            System.out.println("topicName: " + filePropertiesMapModelList.get(i).getTopicName());
 
             for (Map.Entry<String, String> column : filePropertiesMapModelList.get(i).getMappropertis().entrySet()) {
 
