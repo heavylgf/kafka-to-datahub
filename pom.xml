@@ -65,7 +65,7 @@
       <artifactId>kafka-streams</artifactId>
       <version>1.0.0</version>
     </dependency>
-     <!--json-->
+    <!--json-->
     <dependency>
       <groupId>org.codehaus.jackson</groupId>
       <artifactId>jackson-mapper-asl</artifactId>
